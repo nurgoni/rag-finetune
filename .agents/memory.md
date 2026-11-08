@@ -16,13 +16,14 @@ setiap sesi, dan supaya agent baru tidak "memperbaiki" sesuatu yang sengaja dibu
 
 | | |
 |---|---|
-| Fase sekarang | **F2 — Data: dataset & corpus** |
+| Fase sekarang | **F3 — Pipeline walking skeleton** |
 | F0 | Selesai, merge ke `main` (PR `feat/f0-project-scaffold`) |
 | F1 | Selesai di `develop`: `schema/` (Document, RetrievedDocument, QAItem, GenerationStep, JudgeDecision, VoteTally, Aggregation, QAResult, MetricReport), `config/schema.py` (Config + 8 sub-model + `config_hash()`), `config/loader.py` (`ConfigLoader`, `deep_merge`, `ConfigError`), `configs/base.yaml`, `configs/experiments/nq_sequential.yaml` |
-| Verifikasi F1 | `ruff format --check` + `ruff check` bersih; `pytest` 27/27; `python -m rag_finetune.config.loader` mencetak config tervalidasi + hash |
-| Berikutnya | F2 — `dataset/loader.py`, `corpus/loader.py`, `utils/jsonl.py`, fixture data kecil di `tests/fixtures/`. Q1/Q2 (dataset & corpus mana) harus ditanyakan ke pengguna sebelum mulai |
+| F2 | Selesai di `develop`: `utils/jsonl.py` (`read_jsonl`, `write_jsonl`), `dataset/loader.py` (`QADatasetLoader`), `corpus/loader.py` (`CorpusLoader`), fixture HotpotQA-style buatan tangan di `tests/fixtures/` (10 QA multi-hop, 20 dokumen) — lihat ADR-018 |
+| Verifikasi F2 | `ruff format --check` + `ruff check` bersih; `pytest` 39/39; `python -m rag_finetune.dataset.loader` dan `python -m rag_finetune.corpus.loader` mencetak ringkasan fixture |
+| Berikutnya | F3 — `prompt/template.py`, `generator/base.py` + `generator/echo.py`, `retriever/base.py` + `retriever/random_retriever.py`, `pipeline/base.py` + `pipeline/sequential.py`, `registry.py` |
 | Jumlah fase | F0–F10 aktif, F11+ terkunci (naik dari F0–F7 setelah ADR-009) |
-| Branch | `develop` adalah working branch; `main` hanya diperbarui lewat merge `develop` di titik rilis (ADR-017) |
+| Branch | Git Flow ringan: `feature/Fxx-*` → squash → `develop` → `release/*` (`--no-ff`) → `main` + tag (ADR-019). Mulai F2 — F1 sudah commit langsung ke `develop`, tidak di-rewrite |
 | Terakhir diperbarui | 2026-11-08 |
 
 **Perubahan scope 2026-11-08:** keempat arsitektur pipeline masuk scope aktif (ADR-009).
@@ -330,7 +331,7 @@ tidak bisa dibandingkan dengan run baru secara sah.
 ---
 
 ### ADR-017 — `develop` adalah working branch, `main` hanya rilis
-**Status:** Diterima · 2026-11-08
+**Status:** Superseded by ADR-019 · Diterima 2026-11-08
 
 `main` tidak pernah menerima commit langsung atau merge branch fitur. Seluruh pengerjaan fase
 ROADMAP (F1 dst.) terjadi di `develop` atau branch fitur yang dicabang dari `develop`.
@@ -341,9 +342,70 @@ CONTRIBUTING sudah hijau), supaya bisa dirujuk atau di-deploy kapan saja tanpa m
 commit mana yang "aman". Pekerjaan fase yang sedang berjalan butuh tempat untuk commit
 bertahap — termasuk commit yang belum lolos gate — tanpa mengganggu itu.
 
-**Konsekuensi:** lihat [CONTRIBUTING.md §3.1](../CONTRIBUTING.md#31-strategi-branch-adr-017)
-untuk mekanika alurnya. F0 sudah merge ke `main` sebelum ADR ini ditulis; mulai F1, seluruh
-fase dikerjakan di `develop`.
+**Kenapa di-supersede:** ADR ini membolehkan "Agent dan kontributor, langsung atau lewat PR
+fitur" push ke `develop`. Longgar ini yang membuat F1 ter-commit langsung ke `develop` tanpa
+branch fitur — persis yang ditegur user. ADR-019 mengetatkannya jadi Git Flow penuh: `develop`
+hanya menerima squash merge dari `feature/Fxx-*`, tidak ada commit langsung sama sekali.
+
+---
+
+### ADR-019 — Git Flow ringan: `feature/Fxx-*` → squash → `develop` → `release/*` (`--no-ff`) → `main` + tag
+**Status:** Diterima · 2026-11-08 · **Merevisi** ADR-017
+
+```text
+feature/Fxx-*  ──squash──►  develop  ──release/vX.Y.Z (--no-ff)──►  main  (tag vX.Y.Z)
+                               ▲                                       │
+                               └──────────── back-merge ───────────────┘
+hotfix/vX.Y.Z-*  ◄── main ──► main (tag) + back-merge ke develop
+```
+
+Tidak ada commit langsung ke `develop` atau `main`. Setiap fase ROADMAP dikerjakan di
+`feature/Fxx-*`, di-squash-merge ke `develop`. Rilis dilepas dari `release/vX.Y.Z`, di-merge
+ke `main` dengan `--no-ff`, lalu di-tag. Hotfix darurat dicabang dari `main`, dan hasilnya
+di-back-merge ke `develop` supaya tidak hilang di fase berikutnya.
+
+**Mengapa squash ke `develop` tapi `--no-ff` ke `main`:** commit kerja per fitur (eksperimen,
+perbaikan typo, iterasi test) berharga saat sedang dikerjakan tapi jadi noise setelah fitur
+selesai — squash merapikannya jadi satu commit per fitur di `develop`. `main` sebaliknya ingin
+riwayat rilis yang masih menunjukkan fase mana masuk rilis mana; `--no-ff` menjaga titik
+percabangan itu, beda dari squash atau fast-forward yang meratakannya.
+
+**Mengapa pesan commit Conventional Commits dalam Bahasa Inggris:** riwayat git jadi konsisten
+dibaca siapa pun di luar tim, terlepas dari bahasa dokumentasi (yang tetap Bahasa Indonesia).
+
+**Konsekuensi:** lihat [CONTRIBUTING.md §3.1](../CONTRIBUTING.md#31-strategi-branch--git-flow-ringan-adr-019-merevisi-adr-017)
+untuk mekanika lengkapnya. F0 (merge biasa, sebelum `develop` ada) dan F1 (commit langsung ke
+`develop`, sebelum ADR ini ditulis) **tidak** di-rewrite — riwayat yang sudah di-push tidak
+diubah, itu destructive. Mulai F2, seluruh fase wajib lewat `feature/Fxx-*` dan squash merge.
+
+---
+
+### ADR-018 — Dataset: HotpotQA; Corpus: subset kecil buatan sendiri
+**Status:** Diterima · 2026-11-08 · **Menjawab** Q1 dan Q2
+
+Benchmark utama adalah **HotpotQA** (multi-hop), bukan NQ. Corpus pengembangan adalah
+**subset kecil yang dibangun sendiri** (puluhan dokumen), bukan subset Wikipedia pra-index
+FlashRAG (~1 juta dokumen).
+
+**Mengapa HotpotQA meski lebih berat dari NQ:** keputusan eksplisit pengguna saat F2 dimulai.
+Konsekuensinya diterima: HotpotQA butuh >=2 dokumen pendukung per pertanyaan, jadi nilainya
+baru benar-benar terlihat di F7 (loop/Iter-RetGen) dan F8 (branching) — single-hop NQ tidak
+akan membedakan performa sequential vs loop sejelas HotpotQA.
+
+**Mengapa corpus kecil buatan sendiri, bukan Wikipedia 1 juta dokumen:** download besar dan
+build index jam-an menghambat iterasi cepat di F2–F3 (walking skeleton). Subset besar bisa
+disusul di F5 kalau recall@k nyata dibutuhkan untuk retriever BM25/dense.
+
+**Konsekuensi:**
+- `tests/fixtures/qa_sample.jsonl` dan `tests/fixtures/corpus_sample.jsonl` dibuat tangan,
+  meniru pola HotpotQA (pertanyaan butuh kombinasi >=2 dokumen), **bukan** diunduh dari dataset
+  HotpotQA asli — keduanya cukup untuk membuktikan loader F2, bukan untuk mengukur recall sungguhan.
+- Preprocessing dari HotpotQA asli (`train.json`/`dev_distractor.json`) ke format JSONL
+  `{id, question, golden_answers}` milik repo ini (FR-2.1) **belum dikerjakan** — itu kerja
+  terpisah di luar F2, dicatat di sini supaya tidak ditebak/dilewatkan diam-diam.
+- Format corpus JSONL memakai field `contents` (konvensi FlashRAG), dipetakan ke `Document.text`
+  di `corpus/loader.py` — bukan rename field, supaya data HotpotQA asli bisa dipakai nanti
+  tanpa konversi tambahan.
 
 ---
 
@@ -403,8 +465,8 @@ terlihat dari test suite. Deliverable F2 `utils/io.py` sudah ikut di-rename jadi
 
 | # | Pertanyaan | Dibutuhkan saat |
 |---|---|---|
-| Q1 | Dataset mana yang jadi benchmark utama — NQ atau HotpotQA? NQ lebih sederhana (single-hop) untuk MVP | F2 |
-| Q2 | Corpus apa yang dipakai untuk pengembangan? Subset Wikipedia pra-index FlashRAG (1 juta dokumen) atau subset lebih kecil yang dibangun sendiri? | F2 |
+| ~~Q1~~ | ~~Dataset mana yang jadi benchmark utama — NQ atau HotpotQA?~~ **Dijawab: HotpotQA** (ADR-018) | F2 |
+| ~~Q2~~ | ~~Corpus apa yang dipakai untuk pengembangan?~~ **Dijawab: subset kecil buatan sendiri** (ADR-018) | F2 |
 | Q3 | Model Ollama apa yang jadi default di `base.yaml`? Perlu yang cukup patuh untuk QA ekstraktif | F4 |
 | Q4 | Model embedding default — `intfloat/e5-base-v2` (seperti FlashRAG) atau `BAAI/bge-small-en-v1.5` yang lebih ringan? | F5b |
 | Q5 | Prediksi diambil dari output LLM dengan cara apa — ambil apa adanya, atau parse pola seperti `Answer:`? Mempengaruhi skor EM secara signifikan | F6 |

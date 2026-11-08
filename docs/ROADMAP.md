@@ -14,7 +14,7 @@ sebelum ada model berat yang terlibat.
 |---|---|---|
 | F0 | Fondasi repo | ✅ Selesai |
 | F1 | Config & schema | ✅ Selesai |
-| F2 | Data: dataset & corpus | ⬜ Belum |
+| F2 | Data: dataset & corpus | ✅ Selesai |
 | F3 | Pipeline walking skeleton (sequential) | ⬜ Belum |
 | F4 | Generator Ollama | ⬜ Belum |
 | F5 | Retriever nyata (BM25 → dense) | ⬜ Belum |

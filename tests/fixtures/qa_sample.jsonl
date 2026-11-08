@@ -1,0 +1,10 @@
+{"id": "q1", "question": "Apa mata uang negara tempat Kota Arannis menjadi ibu kota?", "golden_answers": ["Solari"]}
+{"id": "q2", "question": "Siapa pendiri universitas yang berada di kota yang jadi ibu kota Provinsi Soreth?", "golden_answers": ["Ines Marrow"]}
+{"id": "q3", "question": "Provinsi apa yang berbatasan dengan negara yang memiliki Gunung Esker?", "golden_answers": ["Soreth", "Provinsi Soreth"]}
+{"id": "q4", "question": "Siapa insinyur yang menemukan mesin yang dipakai oleh Perusahaan Tenun Marrow?", "golden_answers": ["Halden Voss"]}
+{"id": "q5", "question": "Di universitas mana insinyur penemu mesin tenun otomatis belajar?", "golden_answers": ["Universitas Kaldor"]}
+{"id": "q6", "question": "Siapa pendiri universitas tempat penemu mesin tenun otomatis belajar?", "golden_answers": ["Ines Marrow"]}
+{"id": "q7", "question": "Novel apa yang ditulis oleh penulis yang lahir di kota yang terhubung Jembatan Carrow dengan Arannis?", "golden_answers": ["Angin Selatan"]}
+{"id": "q8", "question": "Tahun berapa Penghargaan Sastra Velyria pertama diberikan kepada novel yang ditulis orang yang lahir di Branthe?", "golden_answers": ["1956"]}
+{"id": "q9", "question": "Siapa yang mengoperasikan kereta yang melintasi jembatan penghubung Arannis dan Branthe?", "golden_answers": ["Bank Solari Pusat"]}
+{"id": "q10", "question": "Di kota mana bank sentral negara yang memakai mata uang Solari berkantor?", "golden_answers": ["Arannis", "Kota Arannis"]}

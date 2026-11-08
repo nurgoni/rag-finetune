@@ -65,25 +65,46 @@ Apa pun yang butuh itu diberi mark `@pytest.mark.integration`.
 5. **Perbarui dokumen** kalau perlu: ADR baru ke `.agents/memory.md`, perubahan kontrak ke `PRD.md`, status fase ke `ROADMAP.md`.
 6. **Jalankan gate** di §6 sebelum menyerahkan.
 
-Satu branch, satu perubahan logis. `feat/bm25-retriever`, bukan `feat/retrieval-stuff`.
+Satu branch, satu perubahan logis. `feature/F1-config-schema`, bukan `feature/stuff`.
 
-### 3.1 Strategi branch (ADR-017)
+### 3.1 Strategi branch — Git Flow ringan (ADR-019, merevisi ADR-017)
 
-Dua branch permanen:
+```text
+feature/Fxx-*  ──squash──►  develop  ──release/vX.Y.Z (--no-ff)──►  main  (tag vX.Y.Z)
+                               ▲                                       │
+                               └──────────── back-merge ───────────────┘
+hotfix/vX.Y.Z-*  ◄── main ──► main (tag) + back-merge ke develop
+```
 
-| Branch | Peran | Siapa yang push langsung |
+Dua branch permanen, plus branch sementara berumur pendek:
+
+| Branch | Peran | Cara masuk |
 |---|---|---|
-| `main` | **Produksi.** Mencerminkan rilis yang sudah stabil | Tidak ada — hanya lewat merge `develop` di penutupan fase/rilis |
-| `develop` | **Integrasi.** Working branch default untuk seluruh pengerjaan fase ROADMAP | Agent dan kontributor, langsung atau lewat PR fitur |
+| `main` | **Produksi.** Mencerminkan rilis yang sudah stabil dan di-tag | Merge commit `--no-ff` dari `release/vX.Y.Z` atau `hotfix/vX.Y.Z-*`, lalu di-tag |
+| `develop` | **Integrasi.** Tempat seluruh pekerjaan fase ROADMAP terkumpul | **Squash merge** dari `feature/Fxx-*` — tidak ada commit langsung |
+| `feature/Fxx-*` | Satu fase ROADMAP atau satu perubahan logis, misal `feature/F2-dataset-corpus` | Cabang dari `develop` |
+| `release/vX.Y.Z` | Pembekuan sesaat sebelum rilis — hanya fix kecil, tidak ada fitur baru | Cabang dari `develop` saat satu atau beberapa fase sudah hijau gate §6 |
+| `hotfix/vX.Y.Z-*` | Perbaikan darurat atas `main` yang sudah rilis | Cabang dari `main` |
 
-Alur kerja:
+Alur kerja per fase:
 
-1. Checkout dari `develop`, bukan `main`: `git checkout develop && git checkout -b feat/f1-config-schema`.
-2. Kerjakan satu fase/perubahan logis di branch fitur itu, mengikuti §3 di atas.
-3. Merge balik ke `develop` (PR atau merge langsung untuk kerja solo).
-4. `main` hanya diperbarui dengan merge `develop` → `main` di titik rilis/milestone (misal penutupan satu fase ROADMAP yang sudah hijau gate §6), bukan per-commit.
+1. `git checkout develop && git checkout -b feature/F2-dataset-corpus`.
+2. Kerjakan satu fase/perubahan logis di branch itu, mengikuti §3 di atas. Boleh banyak commit kerja di sini — riwayatnya hilang saat squash.
+3. Push branch, buka PR ke `develop`, **squash merge** → satu commit rapi per fitur di `develop`.
+4. Hapus branch fitur setelah merge.
 
-**Mengapa:** `main` harus selalu bisa di-deploy atau dirujuk sebagai keadaan "terakhir yang terbukti benar", sementara pekerjaan fase yang sedang berjalan (F1 dst.) butuh tempat untuk commit bertahap tanpa mengganggu itu.
+Alur kerja rilis:
+
+1. `git checkout develop && git checkout -b release/v0.2.0` saat fase-fase yang mau dirilis sudah hijau gate §6.
+2. Hanya perbaikan kecil (typo, off-by-one) di branch rilis — fitur baru tidak masuk di sini, balik ke `feature/`.
+3. Merge ke `main` dengan `--no-ff` (bukan squash — riwayat fase yang masuk rilis ini tetap terlihat), lalu `git tag vX.Y.Z`.
+4. **Back-merge** `main` ke `develop` supaya tag dan fix rilis ikut terbawa ke kerja selanjutnya.
+
+**Mengapa squash ke `develop` tapi `--no-ff` ke `main`:** `develop` punya banyak commit kerja per fitur yang tidak perlu diingat satu-satu — squash menjaga `git log develop` tetap satu baris per fitur. `main` sebaliknya ingin riwayat rilis yang masih bisa ditelusuri fase mana yang masuk rilis mana — merge commit menjaga titik percabangannya, beda dengan squash atau fast-forward yang meratakannya.
+
+**Konvensi pesan commit:** [Conventional Commits](https://www.conventionalcommits.org/), **dalam Bahasa Inggris** (`feat: add BM25 retriever`, bukan `feat: tambah BM25`). Dokumentasi (`.md`, docstring, komentar) tetap Bahasa Indonesia — hanya pesan commit yang berbeda bahasa, supaya riwayat git konsisten dibaca siapa pun.
+
+**Catatan retroaktif:** F1 (`feat: add F1 config and schema contracts`, commit `eeb5f40`) sudah ter-push langsung ke `develop` sebelum ADR ini ditulis, melanggar aturan "tidak ada commit langsung ke `develop`". Tidak di-rewrite karena sudah di riwayat bersama (rewrite history yang sudah di-push adalah destructive, lihat batasan di memori). Mulai F2, seluruh fase wajib lewat `feature/Fxx-*`.
 
 ---
 
@@ -206,6 +227,10 @@ Body menjelaskan **mengapa**, bukan apa — diff sudah menunjukkan apanya.
 ---
 
 ## 6. Gate sebelum menyerahkan pekerjaan
+
+`ruff format --check`, `ruff check`, dan `pytest` juga ditegakkan otomatis oleh CI
+([.github/workflows/ci.yml](.github/workflows/ci.yml)) di setiap push dan PR ke `main`/`develop`.
+Jalankan lokal dulu — CI cuma jaring pengaman terakhir, bukan pengganti gate ini.
 
 Semua harus terpenuhi:
 
