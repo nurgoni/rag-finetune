@@ -9,7 +9,7 @@ orkestrasi RAG diimplementasikan — karena di situ pelajarannya: bedanya Standa
 Iter-RetGen, dan Adaptive-RAG bukan di komponennya (retriever dan generator sama saja),
 melainkan **di cara komponen itu dirangkai**.
 
-> **Status: F1 — config & schema.** Belum ada pipeline yang bisa dijalankan.
+> **Status: F2 — data: dataset & corpus.** Belum ada pipeline yang bisa dijalankan.
 > Lihat [docs/ROADMAP.md](docs/ROADMAP.md) untuk posisi pengerjaan saat ini.
 
 ## Empat arsitektur pipeline

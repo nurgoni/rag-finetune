@@ -1,0 +1,27 @@
+# Default untuk seluruh eksperimen. YAML di configs/experiments/ hanya menuliskan
+# selisihnya dari file ini (deep merge, FR-1.2). dataset.path dan corpus.path tidak
+# punya default yang masuk akal, jadi wajib diisi di tiap YAML eksperimen.
+
+index:
+  output_dir: indexes/default
+
+retriever:
+  type: random
+  top_k: 5
+
+generator:
+  type: echo
+  temperature: 0.0
+  max_retries: 3
+
+prompt:
+  template: qa
+
+evaluation:
+  metrics:
+    - exact_match
+    - f1
+
+run:
+  seed: 42
+  pipeline: sequential

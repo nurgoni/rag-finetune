@@ -16,18 +16,14 @@ setiap sesi, dan supaya agent baru tidak "memperbaiki" sesuatu yang sengaja dibu
 
 | | |
 |---|---|
-| Fase sekarang | **F1 — Config & schema** (sedang dikerjakan) |
-| F0 | Selesai dan sudah merge ke `main` (PR `feat/f0-project-scaffold`) |
-| Yang sudah ada | Dokumen dasar + `pyproject.toml`, `exceptions.py`, `utils/logging_config.py`, `tests/test_import.py` |
-| Verifikasi F0 | `ruff format --check` + `ruff check` bersih; `pytest` 7/7; `import rag_finetune` tidak membocorkan submodul apa pun |
-| Berikutnya | Selesaikan F1 (`schema/`, `config/schema.py`, `config/loader.py`, `configs/*.yaml`), lalu F2 |
+| Fase sekarang | **F2 — Data: dataset & corpus** |
+| F0 | Selesai, merge ke `main` (PR `feat/f0-project-scaffold`) |
+| F1 | Selesai di `develop`: `schema/` (Document, RetrievedDocument, QAItem, GenerationStep, JudgeDecision, VoteTally, Aggregation, QAResult, MetricReport), `config/schema.py` (Config + 8 sub-model + `config_hash()`), `config/loader.py` (`ConfigLoader`, `deep_merge`, `ConfigError`), `configs/base.yaml`, `configs/experiments/nq_sequential.yaml` |
+| Verifikasi F1 | `ruff format --check` + `ruff check` bersih; `pytest` 27/27; `python -m rag_finetune.config.loader` mencetak config tervalidasi + hash |
+| Berikutnya | F2 — `dataset/loader.py`, `corpus/loader.py`, `utils/jsonl.py`, fixture data kecil di `tests/fixtures/`. Q1/Q2 (dataset & corpus mana) harus ditanyakan ke pengguna sebelum mulai |
 | Jumlah fase | F0–F10 aktif, F11+ terkunci (naik dari F0–F7 setelah ADR-009) |
 | Branch | `develop` adalah working branch; `main` hanya diperbarui lewat merge `develop` di titik rilis (ADR-017) |
 | Terakhir diperbarui | 2026-11-08 |
-
-Langkah F1 sesuai ROADMAP: `schema/` (Document, RetrievedDocument, QAItem, GenerationStep,
-JudgeDecision, VoteTally, Aggregation, QAResult, MetricReport), `config/schema.py`,
-`config/loader.py`, `configs/base.yaml`, `configs/experiments/nq_sequential.yaml`.
 
 **Perubahan scope 2026-11-08:** keempat arsitektur pipeline masuk scope aktif (ADR-009).
 Yang terdampak di luar ROADMAP: `QAResult` memakai `steps: list[GenerationStep]` sejak F3

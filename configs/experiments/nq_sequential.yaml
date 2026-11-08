@@ -1,0 +1,9 @@
+# Baseline Standard RAG di atas Natural Questions (Q1 di .agents/memory.md masih terbuka;
+# path di bawah menunjuk ke lokasi yang akan diisi F2).
+
+dataset:
+  path: datasets/nq/test.jsonl
+  split: test
+
+corpus:
+  path: datasets/nq/corpus.jsonl
