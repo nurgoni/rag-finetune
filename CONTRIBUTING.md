@@ -67,6 +67,24 @@ Apa pun yang butuh itu diberi mark `@pytest.mark.integration`.
 
 Satu branch, satu perubahan logis. `feat/bm25-retriever`, bukan `feat/retrieval-stuff`.
 
+### 3.1 Strategi branch (ADR-017)
+
+Dua branch permanen:
+
+| Branch | Peran | Siapa yang push langsung |
+|---|---|---|
+| `main` | **Produksi.** Mencerminkan rilis yang sudah stabil | Tidak ada — hanya lewat merge `develop` di penutupan fase/rilis |
+| `develop` | **Integrasi.** Working branch default untuk seluruh pengerjaan fase ROADMAP | Agent dan kontributor, langsung atau lewat PR fitur |
+
+Alur kerja:
+
+1. Checkout dari `develop`, bukan `main`: `git checkout develop && git checkout -b feat/f1-config-schema`.
+2. Kerjakan satu fase/perubahan logis di branch fitur itu, mengikuti §3 di atas.
+3. Merge balik ke `develop` (PR atau merge langsung untuk kerja solo).
+4. `main` hanya diperbarui dengan merge `develop` → `main` di titik rilis/milestone (misal penutupan satu fase ROADMAP yang sudah hijau gate §6), bukan per-commit.
+
+**Mengapa:** `main` harus selalu bisa di-deploy atau dirujuk sebagai keadaan "terakhir yang terbukti benar", sementara pekerjaan fase yang sedang berjalan (F1 dst.) butuh tempat untuk commit bertahap tanpa mengganggu itu.
+
 ---
 
 ## 4. Cara menambah komponen

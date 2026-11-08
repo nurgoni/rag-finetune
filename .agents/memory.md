@@ -16,14 +16,18 @@ setiap sesi, dan supaya agent baru tidak "memperbaiki" sesuatu yang sengaja dibu
 
 | | |
 |---|---|
-| Fase sekarang | **F0 — Fondasi repo** (selesai, menunggu commit) |
+| Fase sekarang | **F1 — Config & schema** (sedang dikerjakan) |
+| F0 | Selesai dan sudah merge ke `main` (PR `feat/f0-project-scaffold`) |
 | Yang sudah ada | Dokumen dasar + `pyproject.toml`, `exceptions.py`, `utils/logging_config.py`, `tests/test_import.py` |
 | Verifikasi F0 | `ruff format --check` + `ruff check` bersih; `pytest` 7/7; `import rag_finetune` tidak membocorkan submodul apa pun |
-| Berikutnya | **F1 — Config & schema**. Tidak ada pertanyaan terbuka yang menghalangi |
+| Berikutnya | Selesaikan F1 (`schema/`, `config/schema.py`, `config/loader.py`, `configs/*.yaml`), lalu F2 |
 | Jumlah fase | F0–F10 aktif, F11+ terkunci (naik dari F0–F7 setelah ADR-009) |
+| Branch | `develop` adalah working branch; `main` hanya diperbarui lewat merge `develop` di titik rilis (ADR-017) |
 | Terakhir diperbarui | 2026-11-08 |
 
-Langkah berikutnya sesuai ROADMAP: `pyproject.toml`, layout paket, `exceptions.py`, `utils/logging.py`.
+Langkah F1 sesuai ROADMAP: `schema/` (Document, RetrievedDocument, QAItem, GenerationStep,
+JudgeDecision, VoteTally, Aggregation, QAResult, MetricReport), `config/schema.py`,
+`config/loader.py`, `configs/base.yaml`, `configs/experiments/nq_sequential.yaml`.
 
 **Perubahan scope 2026-11-08:** keempat arsitektur pipeline masuk scope aktif (ADR-009).
 Yang terdampak di luar ROADMAP: `QAResult` memakai `steps: list[GenerationStep]` sejak F3
@@ -326,6 +330,24 @@ dokumen sendiri, sebelum ada kode.
 **Mengapa template prompt di-hash:** prompt adalah data (ADR-002 semangatnya sama), dan
 mengubah satu kata di template bisa menggeser EM beberapa poin. Tanpa hash-nya, run lama
 tidak bisa dibandingkan dengan run baru secara sah.
+
+---
+
+### ADR-017 — `develop` adalah working branch, `main` hanya rilis
+**Status:** Diterima · 2026-11-08
+
+`main` tidak pernah menerima commit langsung atau merge branch fitur. Seluruh pengerjaan fase
+ROADMAP (F1 dst.) terjadi di `develop` atau branch fitur yang dicabang dari `develop`.
+`main` diperbarui hanya lewat merge `develop` di titik rilis/milestone.
+
+**Mengapa:** `main` harus selalu mencerminkan keadaan yang terbukti benar (gate §6
+CONTRIBUTING sudah hijau), supaya bisa dirujuk atau di-deploy kapan saja tanpa memeriksa
+commit mana yang "aman". Pekerjaan fase yang sedang berjalan butuh tempat untuk commit
+bertahap — termasuk commit yang belum lolos gate — tanpa mengganggu itu.
+
+**Konsekuensi:** lihat [CONTRIBUTING.md §3.1](../CONTRIBUTING.md#31-strategi-branch-adr-017)
+untuk mekanika alurnya. F0 sudah merge ke `main` sebelum ADR ini ditulis; mulai F1, seluruh
+fase dikerjakan di `develop`.
 
 ---
 

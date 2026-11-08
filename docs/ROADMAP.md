@@ -12,8 +12,8 @@ sebelum ada model berat yang terlibat.
 
 | Fase | Judul | Status |
 |---|---|---|
-| F0 | Fondasi repo | ⬜ Belum |
-| F1 | Config & schema | ⬜ Belum |
+| F0 | Fondasi repo | ✅ Selesai |
+| F1 | Config & schema | 🟨 Sedang dikerjakan |
 | F2 | Data: dataset & corpus | ⬜ Belum |
 | F3 | Pipeline walking skeleton (sequential) | ⬜ Belum |
 | F4 | Generator Ollama | ⬜ Belum |
