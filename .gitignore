@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Environment
+.venv/
+.env
+
+# Tooling cache
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Artefak eksperimen — besar, bisa dibangun ulang, dan bukan sumber kebenaran.
+# `results/` sengaja diabaikan: provenance ada di metrics.json (ADR-016), bukan di git.
+results/
+indexes/
+models/
+datasets/
+
+# Catatan: uv.lock TIDAK diabaikan. Ia bagian dari reprodusibilitas (NFR-5).
